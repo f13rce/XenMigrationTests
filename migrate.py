@@ -31,7 +31,7 @@ def PerformMigration(aHost, aTarget, aVMName, aVMIP):
 	startTime = GetTime()
 
 	# Migrate
-	os.system("sudo xl migrate {} {}".format(aVMName, aTarget)) # maybe root@aTarget?
+	os.system("sudo xl migrate {} root@{}".format(aVMName, aTarget))
 
 	# Check for uptime
 	WaitTillServerIsUp()
