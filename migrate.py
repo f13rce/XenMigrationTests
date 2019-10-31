@@ -90,7 +90,7 @@ def main():
 	os.system("sudo echo \"Thank you - we now have sudo rights!\"")
 
 	# Perform the migration
-	Log("Will be performing {} migration tests.".format(arg.count))
+	Log("Will be performing {} migration tests.".format(args.count))
 	for i in range(int(args.count)):
 		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, i, args.count))
 		PerformMigration(machineHost, machineTarget, args.name, vmIP)
