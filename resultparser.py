@@ -39,6 +39,7 @@ median = deltas[round(i / 2)]
 
 # Log in OS3-wiki format
 print("^Type^Value (ms)^")
+print("|Total tests|{}|".format(i))
 print("|High|{}|".format(high))
 print("|Low|{}|".format(low))
 print("|Mean|{}|".format(average))

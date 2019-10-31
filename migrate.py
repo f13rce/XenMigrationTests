@@ -24,23 +24,51 @@ def Log(aText):
 def GetTime():
 	return int(round(time.time() * 1000))
 
+def LogDowntime(aVMIP):
+	WaitTillServerIsUp(aVMIP)
+	WaitTillServerIsDown(aVMIP)
+	startTime = GetTime()
+	WaitTillServerIsUp(aVMIP)
+	endTime = GetTime()
+	delta = endTime - startTime
+
 def PerformMigration(aHost, aTarget, aVMName, aVMIP, aIndex):
 	# Preferably no logging in the migration process - it may affect the performance!
+
+	# Ensuring our domain exists
+	Log("Ensuring our domain exists by creating it...")
+	os.system("sudo xl create /etc/xen/{}.cfg > /dev/null 2>&1".format(aVMName))
+
+	# Destroy existing instance
+	Log("Destroying previous instance so that XL has no issue with us transferring.")
+	ssh = subprocess.Popen(["ssh", "-v", "root@{}".format(aTarget), "xl destroy {}".format(aVMName)],
+		shell=False,
+		stdout=subprocess.PIPE,
+		stderr=subprocess.PIPE)
+	Log("SSH xl destroy output: {}".format(ssh.stdout.readlines()))
+	ssh.kill()
+
 	# Start timer
-	WaitTillServerIsUp(aVMIP) # First confirm the server is up
+	Log("Starting timer")
 	startTime = GetTime()
 
-	# Migrate
-	os.system("sudo xl migrate {} root@{}".format(aVMName, aTarget))
+	# Wait for termination
+	#timeToSleep = 15
+	#Log("Sleeping {} seconds so that the termination can peacefully continue...".format(timeToSleep))
+	#time.sleep(timeToSleep)
 
-	# Check for uptime
-	WaitTillServerIsUp(aVMIP)
+	# Migrate
+	Log("Performing migration")
+	#os.system("sudo xl migrate {} root@{}".format(aVMName, aTarget))
+	os.system("xl migrate -s \"ssh root@{} -i /root/.ssh/id_rsa\" {} \"\" --debug".format(aTarget, aVMName))
 
 	# Stop timer
+	# Check for uptime
+	WaitTillServerIsUp(aVMIP)
 	endTime = GetTime()
 
 	# Store results
-	Log("Done with the migration in {}ms!".format(endTime - startTime))
+	Log("Done with the migration! Downtime was {}ms!".format(endTime - startTime))
 	StoreResult(startTime, endTime, aHost, aTarget, aIndex)
 
 def WaitTillServerIsUp(aVMIP):
@@ -52,6 +80,17 @@ def WaitTillServerIsUp(aVMIP):
 		if not curlError in curlOutput:
 			#Log("DEBUG: Server is up!") # COMMENT THIS WHEN IT WORKS
 			serverIsDown = False
+			break
+
+def WaitTillServerIsDown(aVMIP):
+	# Curl because the host is running apache2
+	serverIsDown = False
+	while serverIsDown:
+		curlOutput = os.popen('curl {}'.format(aVMIP)).read()
+		Log("DEBUG: Down check: {}".format(curlOutput)) # COMMENT DISABLE THIS WHEN IT WORKS
+		if curlError in curlOutput:
+			Log("DEBUG: Down check: Server is down!") # COMMENT THIS WHEN IT WORKS
+			serverIsDown = True
 			break
 
 
@@ -92,8 +131,9 @@ def main():
 	# Perform the migration
 	Log("Will be performing {} migration tests.".format(args.count))
 	for i in range(int(args.count)):
-		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, i, args.count))
+		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, (i+1), args.count))
 		PerformMigration(machineHost, machineTarget, args.name, vmIP, (i+1))
+	Log("All done with the tests! Results have been saved to \"{}\"".format(resultsFileName))
 
 	return 0
 
