@@ -24,7 +24,7 @@ def Log(aText):
 def GetTime():
 	return int(round(time.time() * 1000))
 
-def PerformMigration(aHost, aTarget, aVMName):
+def PerformMigration(aHost, aTarget, aVMName, aVMIP):
 	# Preferably no logging in the migration process - it may affect the performance!
 	# Start timer
 	startTime = GetTime()
@@ -36,7 +36,7 @@ def PerformMigration(aHost, aTarget, aVMName):
 	# Curl because the host is running apache2
 	serverIsDown = True
 	while serverIsDown:
-		curlOutput = os.popen('curl {}'.format(aTarget)).read()
+		curlOutput = os.popen('curl {}'.format(aVMIP)).read()
 		Log("DEBUG: {}".format(curlOutput)) # COMMENT DISABLE THIS WHEN IT WORKS
 		if not curlError in curlOutput:
 			Log("DEBUG: Server is up!") # COMMENT THIS WHEN IT WORKS
@@ -60,18 +60,20 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-o", "--origin", help="IP address of the host machine that is performing the migration (e.g.: 145.100.104.48)")
 	parser.add_argument("-t", "--target", help="IP address of the target machine that is receiving the migration (e.g.: 145.100.104.49)")
+	parser.add_argument("-v", "--vmip", help="IP address of the VM that is running on the target machine (e.g.: 145.100.104.50)")
 	parser.add_argument("-n", "--name", help="Name of the VM that is being migrated (e.g.: migration-cold)")
 	parser.add_argument("-c", "--count", help="Amount of times the migration should be performed (e.g.: 32)")
 
 	args = parser.parse_args()
 	Log("Found args: {}".format((repr(args))))
 
-	if args.origin == None or args.target == None or args.name == None or args.count == None:
+	if args.origin == None or args.target == None or args.vmip == None or args.name == None or args.count == None:
 		Log("Error: One or more required arguments are missing. Ask for --help for info.")
 		return 1
 
 	machineHost = args.origin
 	machineTarget = args.target
+	vmIP = args.vmip
 
 	# Start with clean log file
 	with open(resultsFileName, "w") as f:
@@ -85,8 +87,8 @@ def main():
 	# Perform the migration
 	Log("Will be performing {} migration tests.".format(arg.count))
 	for i in range(int(args.count)):
-		Log("Performing migration \"{}\" {}-->{} ({}/{})...".format(args.name, machineHost, machineTarget, i, args.count))
-		PerformMigration(machineHost, machineTarget, args.name)
+		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, i, args.count))
+		PerformMigration(machineHost, machineTarget, args.name, vmIP)
 
 	return 0
 
