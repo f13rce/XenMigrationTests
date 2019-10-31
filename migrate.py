@@ -125,7 +125,7 @@ def main():
 		f.write("Test ID, Delta, Start time, End Time, Host, Target\n")
 
 	# Ensure we have sudo rights
-	Log("The migration command required sudo - you may be prompted now to enter your password to grant sudo rights to prevent performance timing issues.")
+	Log("The migration command requires sudo - you may be prompted now to enter your password to grant sudo rights to prevent performance timing issues.")
 	os.system("sudo echo \"Thank you - we now have sudo rights!\"")
 
 	# Perform the migration
