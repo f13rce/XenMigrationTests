@@ -14,7 +14,6 @@ with open("{}".format(sys.argv[1]), "r") as f:
 	i = 0
 	while True:
 		try:
-			i += 1
 			# Fetch delta
 			line = f.readline()
 			values = line.split(", ")
@@ -28,6 +27,7 @@ with open("{}".format(sys.argv[1]), "r") as f:
 			if delta < low:
 				low = delta
 			total += delta
+			i += 1
 		except:
 			break
 
