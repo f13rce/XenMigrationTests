@@ -48,9 +48,9 @@ def WaitTillServerIsUp(aVMIP):
 	serverIsDown = True
 	while serverIsDown:
 		curlOutput = os.popen('curl {}'.format(aVMIP)).read()
-		Log("DEBUG: {}".format(curlOutput)) # COMMENT DISABLE THIS WHEN IT WORKS
+		#Log("DEBUG: {}".format(curlOutput)) # COMMENT DISABLE THIS WHEN IT WORKS
 		if not curlError in curlOutput:
-			Log("DEBUG: Server is up!") # COMMENT THIS WHEN IT WORKS
+			#Log("DEBUG: Server is up!") # COMMENT THIS WHEN IT WORKS
 			serverIsDown = False
 			break
 
