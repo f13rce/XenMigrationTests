@@ -27,14 +27,14 @@ def GetTime():
 def PerformMigration(aHost, aTarget, aVMName, aVMIP):
 	# Preferably no logging in the migration process - it may affect the performance!
 	# Start timer
-	WaitTillServerIsUp() # First confirm the server is up
+	WaitTillServerIsUp(aVMIP) # First confirm the server is up
 	startTime = GetTime()
 
 	# Migrate
 	os.system("sudo xl migrate {} root@{}".format(aVMName, aTarget))
 
 	# Check for uptime
-	WaitTillServerIsUp()
+	WaitTillServerIsUp(aVMIP)
 
 	# Stop timer
 	endTime = GetTime()
@@ -43,7 +43,7 @@ def PerformMigration(aHost, aTarget, aVMName, aVMIP):
 	Log("Done with the migration in {}ms!".format(endTime - startTime))
 	StoreResult(startTime, endTime, aHost, aTarget)
 
-def WaitTillServerIsUp():
+def WaitTillServerIsUp(aVMIP):
 	# Curl because the host is running apache2
 	serverIsDown = True
 	while serverIsDown:
