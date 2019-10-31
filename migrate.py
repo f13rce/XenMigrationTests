@@ -14,6 +14,7 @@ import subprocess
 
 # Globals
 resultsFileName = "results_{}.csv".format(time.asctime(time.localtime(time.time())).replace(" ", "_").replace(":", "."))
+curlError = "curl: (7) Failed to connect to"
 
 # Logging
 def Log(aText):
@@ -25,10 +26,27 @@ def GetTime():
 
 def PerformMigration(aHost, aTarget, aVMName):
 	# Preferably no logging in the migration process - it may affect the performance!
-	command = "sudo xl migrate {} {}".format(aVMName, aTarget)
+	# Start timer
 	startTime = GetTime()
-	os.system(command)
+
+	# Migrate
+	os.system("sudo xl migrate {} {}".format(aVMName, aTarget)) # maybe root@aTarget?
+
+	# Check for uptime
+	# Curl because the host is running apache2
+	serverIsDown = True
+	while serverIsDown:
+		curlOutput = os.popen('curl {}'.format(aTarget)).read()
+		Log("DEBUG: {}".format(curlOutput)) # COMMENT DISABLE THIS WHEN IT WORKS
+		if not curlError in curlOutput:
+			Log("DEBUG: Server is up!") # COMMENT THIS WHEN IT WORKS
+			serverIsDown = False
+			break
+
+	# Stop timer
 	endTime = GetTime()
+
+	# Store results
 	Log("Done with the migration in {}ms!".format(endTime - startTime))
 	StoreResult(startTime, endTime, aHost, aTarget)
 
@@ -65,6 +83,7 @@ def main():
 	os.system("sudo echo \"Thank you - we now have sudo rights!\"")
 
 	# Perform the migration
+	Log("Will be performing {} migration tests.".format(arg.count))
 	for i in range(int(args.count)):
 		Log("Performing migration \"{}\" {}-->{} ({}/{})...".format(args.name, machineHost, machineTarget, i, args.count))
 		PerformMigration(machineHost, machineTarget, args.name)
