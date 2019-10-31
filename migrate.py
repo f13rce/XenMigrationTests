@@ -83,7 +83,7 @@ def main():
 	# Start with clean log file
 	with open(resultsFileName, "w") as f:
 		f.truncate()
-		f.write("Delta, Start time, End Time, Host, Target\n")
+		f.write("Test ID, Delta, Start time, End Time, Host, Target\n")
 
 	# Ensure we have sudo rights
 	Log("The migration command required sudo - you may be prompted now to enter your password to grant sudo rights to prevent performance timing issues.")
@@ -93,7 +93,7 @@ def main():
 	Log("Will be performing {} migration tests.".format(args.count))
 	for i in range(int(args.count)):
 		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, i, args.count))
-		PerformMigration(machineHost, machineTarget, args.name, vmIP, i)
+		PerformMigration(machineHost, machineTarget, args.name, vmIP, (i+1))
 
 	return 0
 
