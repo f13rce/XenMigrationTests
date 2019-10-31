@@ -24,7 +24,7 @@ def Log(aText):
 def GetTime():
 	return int(round(time.time() * 1000))
 
-def PerformMigration(aHost, aTarget, aVMName, aVMIP):
+def PerformMigration(aHost, aTarget, aVMName, aVMIP, aIndex):
 	# Preferably no logging in the migration process - it may affect the performance!
 	# Start timer
 	WaitTillServerIsUp(aVMIP) # First confirm the server is up
@@ -41,7 +41,7 @@ def PerformMigration(aHost, aTarget, aVMName, aVMIP):
 
 	# Store results
 	Log("Done with the migration in {}ms!".format(endTime - startTime))
-	StoreResult(startTime, endTime, aHost, aTarget)
+	StoreResult(startTime, endTime, aHost, aTarget, aIndex)
 
 def WaitTillServerIsUp(aVMIP):
 	# Curl because the host is running apache2
@@ -55,9 +55,9 @@ def WaitTillServerIsUp(aVMIP):
 			break
 
 
-def StoreResult(aStartTime, aEndTime, aHost, aTarget):
+def StoreResult(aStartTime, aEndTime, aHost, aTarget, aIndex):
 	with open(resultsFileName, "a") as f:
-		f.write("{}, {}, {}, {}, {}\n".format(aEndTime - aStartTime, aStartTime, aEndTime, aHost, aTarget))
+		f.write("{}, {}, {}, {}, {}, {}\n".format(aIndex, aEndTime - aStartTime, aStartTime, aEndTime, aHost, aTarget))
 
 # Main
 def main():
@@ -93,7 +93,7 @@ def main():
 	Log("Will be performing {} migration tests.".format(args.count))
 	for i in range(int(args.count)):
 		Log("Performing migration \"{}\" {}-->{} (VM: {}) ({}/{})...".format(args.name, machineHost, machineTarget, vmIP, i, args.count))
-		PerformMigration(machineHost, machineTarget, args.name, vmIP)
+		PerformMigration(machineHost, machineTarget, args.name, vmIP, i)
 
 	return 0
 
